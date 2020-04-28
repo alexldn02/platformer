@@ -5,24 +5,38 @@ class Level1 extends Phaser.Scene {
 
   preload() {
     //Loading up assets
-    this.load.image('cloud', './assets/cloud.png');
-    this.load.spritesheet('player', './assets/player.png', { frameWidth: 64, frameHeight: 128 });
-    this.load.image('platform-normal', './assets/grass-platform/normal.png');
-    this.load.image('platform-right', './assets/grass-platform/right.png');
-    this.load.image('platform-left', './assets/grass-platform/left.png');
-    this.load.image('platform-centre', './assets/grass-platform/centre.png');
+    this.load.image('cloud', 'assets/cloud.png');
+    this.load.spritesheet('player', 'assets/player.png', { frameWidth: 64, frameHeight: 120 });
+    this.load.image('platform-normal', 'assets/grass-platform/normal.png');
+    this.load.image('platform-right', 'assets/grass-platform/right.png');
+    this.load.image('platform-left', 'assets/grass-platform/left.png');
+    this.load.image('platform-centre', 'assets/grass-platform/centre.png');
+    this.load.image('mountains', 'assets/mountains.png');
+    this.load.image('hills', 'assets/hills.png');
+    this.load.image('sign', 'assets/sign.png');
+    this.load.image('tutorial', 'assets/tutorial.png');
   }
 
   create() {
-
     //Level dimensions
-    gameState.levelWidth = 3000;
+    gameState.levelWidth = 8000;
     gameState.levelHeight = 720;
+
+    //Change cursor
+    this.input.setDefaultCursor('url(assets/cursor.png), pointer');
 
     //Adding background
     gameState.bg = this.add.rectangle(0, 0, config.width, config.height, 0x90ffff)
       .setOrigin(0, 0)
       .setScrollFactor(0);
+
+    gameState.mountains = this.add.image(0, 0, 'mountains')
+      .setOrigin(0, 0);
+    gameState.mountains.setScrollFactor((gameState.mountains.getBounds().width - config.width) / (gameState.levelWidth - config.width));
+
+    gameState.hills = this.add.image(0, 0, 'hills')
+      .setOrigin(0, 0);
+    gameState.hills.setScrollFactor((gameState.hills.getBounds().width - config.width) / (gameState.levelWidth - config.width));
 
     //Adding clouds
     gameState.clouds = this.physics.add.group({ allowGravity: false });
@@ -44,12 +58,31 @@ class Level1 extends Phaser.Scene {
     gameState.platforms.create(512, 464, 'platform-normal').setOrigin(0, 0).refreshBody();
     gameState.platforms.create(768, 400, 'platform-normal').setOrigin(0, 0).refreshBody();
 
+    //Adding sign
+    gameState.tutorial = this.add.image(250, 376, 'tutorial')
+      .setOrigin(0, 0)
+      .setDepth(20);
+    gameState.tutorial.visible = false;
+    gameState.sign = this.add.image(328, 568, 'sign')
+      .setOrigin(0, 0)
+      .setInteractive()
+      .on('pointerover', (pointer) => {
+        gameState.tutorial.visible = true;
+        })
+      .on('pointerout', (pointer) => {
+        gameState.tutorial.visible = false;
+        });
+
     //Adding player sprite
     gameState.player = this.physics.add.sprite(64, 464, 'player');
     this.physics.add.collider(gameState.player, gameState.platforms);
 
     //Adding controls
     gameState.cursors = this.input.keyboard.addKeys({
+      up: Phaser.Input.Keyboard.KeyCodes.UP,
+      down: Phaser.Input.Keyboard.KeyCodes.DOWN,
+      left: Phaser.Input.Keyboard.KeyCodes.LEFT,
+      right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
       w: Phaser.Input.Keyboard.KeyCodes.W,
       s: Phaser.Input.Keyboard.KeyCodes.S,
       a: Phaser.Input.Keyboard.KeyCodes.A,
@@ -82,9 +115,7 @@ class Level1 extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, gameState.levelWidth, gameState.levelHeight + gameState.player.height);
     this.cameras.main.startFollow(gameState.player, false , 0.1, 0.1);
 
-    this.input.on('pointerup', (pointer) => {
-      gameState.platforms.create(pointer.x + this.cameras.main.scrollX, pointer.y + this.cameras.main.scrollY, 'platform-normal');
-    })
+
   }
 
   update() {
@@ -98,14 +129,17 @@ class Level1 extends Phaser.Scene {
     });
 
     //Player movement
-    if (gameState.cursors.d.isDown && gameState.cursors.a.isDown) {
+    const right = gameState.cursors.d.isDown || gameState.cursors.right.isDown;
+    const left = gameState.cursors.a.isDown || gameState.cursors.left.isDown;
+
+    if (right && left) {
       gameState.player.anims.play('idle', true);
       gameState.player.setVelocityX(0);
-    } else if (gameState.cursors.d.isDown) {
+    } else if (right) {
       gameState.player.flipX = false;
       gameState.player.anims.play('run', true);
       gameState.player.setVelocityX(500);
-    } else if (gameState.cursors.a.isDown) {
+    } else if (left) {
       gameState.player.setVelocityX(-500);
       gameState.player.flipX = true;
       gameState.player.anims.play('run', true);
