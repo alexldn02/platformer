@@ -5,12 +5,12 @@ class Level1 extends Phaser.Scene {
 
   preload() {
     //Loading up assets
-    this.load.image('cloud', '../assets/cloud.png');
-    this.load.spritesheet('player', '../assets/player.png', { frameWidth: 64, frameHeight: 128 });
-    this.load.image('platform-normal', '../assets/grass-platform/normal.png');
-    this.load.image('platform-right', '../assets/grass-platform/right.png');
-    this.load.image('platform-left', '../assets/grass-platform/left.png');
-    this.load.image('platform-centre', '../assets/grass-platform/centre.png');
+    this.load.image('cloud', './assets/cloud.png');
+    this.load.spritesheet('player', './assets/player.png', { frameWidth: 64, frameHeight: 128 });
+    this.load.image('platform-normal', './assets/grass-platform/normal.png');
+    this.load.image('platform-right', './assets/grass-platform/right.png');
+    this.load.image('platform-left', './assets/grass-platform/left.png');
+    this.load.image('platform-centre', './assets/grass-platform/centre.png');
   }
 
   create() {
@@ -81,6 +81,10 @@ class Level1 extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, gameState.levelWidth, gameState.levelHeight);
     this.physics.world.setBounds(0, 0, gameState.levelWidth, gameState.levelHeight + gameState.player.height);
     this.cameras.main.startFollow(gameState.player, false , 0.1, 0.1);
+
+    this.input.on('pointerup', (pointer) => {
+      gameState.platforms.create(pointer.x + this.cameras.main.scrollX, pointer.y + this.cameras.main.scrollY, 'platform-normal');
+    })
   }
 
   update() {
@@ -126,5 +130,6 @@ class Level1 extends Phaser.Scene {
         }
       });
     }
+
   }
 }
