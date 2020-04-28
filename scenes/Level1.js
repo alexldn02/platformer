@@ -14,7 +14,9 @@ class Level1 extends Phaser.Scene {
     this.load.image('mountains', 'assets/mountains.png');
     this.load.image('hills', 'assets/hills.png');
     this.load.image('sign', 'assets/sign.png');
-    this.load.image('tutorial', 'assets/tutorial.png');
+    this.load.image('tutorial1', 'assets/tutorial/1.png');
+    this.load.image('tutorial2', 'assets/tutorial/2.png');
+    this.load.spritesheet('enemy', 'assets/bug.png', { frameWidth: 64, frameHeight: 48 });
   }
 
   create() {
@@ -57,25 +59,57 @@ class Level1 extends Phaser.Scene {
     gameState.platforms.create(2304, 656, 'platform-right').setOrigin(0, 0).refreshBody();
     gameState.platforms.create(512, 464, 'platform-normal').setOrigin(0, 0).refreshBody();
     gameState.platforms.create(768, 400, 'platform-normal').setOrigin(0, 0).refreshBody();
+    for (let i=11;i<16;i+=2) {
+      gameState.platforms.create(i*256, 656-(i-11)*64, 'platform-normal').setOrigin(0, 0).refreshBody();
+    }
+    gameState.platforms.create(4608, 592, 'platform-normal').setOrigin(0, 0).refreshBody();
+    gameState.platforms.create(5376, 592, 'platform-normal').setOrigin(0, 0).refreshBody();
+    gameState.platforms.create(5888, 656, 'platform-left').setOrigin(0, 0).refreshBody();
+    for (let i=24;i<30;i++) {
+      gameState.platforms.create(i*256, 656, 'platform-centre').setOrigin(0, 0).refreshBody();
+    }
+    gameState.platforms.create(7680, 656, 'platform-right').setOrigin(0, 0).refreshBody();
 
-    //Adding sign
-    gameState.tutorial = this.add.image(250, 376, 'tutorial')
+    //Adding signs
+    gameState.tutorial1 = this.add.image(250, 376, 'tutorial1')
       .setOrigin(0, 0)
       .setDepth(20);
-    gameState.tutorial.visible = false;
-    gameState.sign = this.add.image(328, 568, 'sign')
+    gameState.tutorial1.visible = false;
+    gameState.sign1 = this.add.image(328, 568, 'sign')
       .setOrigin(0, 0)
       .setInteractive()
       .on('pointerover', (pointer) => {
-        gameState.tutorial.visible = true;
+        gameState.tutorial1.visible = true;
         })
       .on('pointerout', (pointer) => {
-        gameState.tutorial.visible = false;
+        gameState.tutorial1.visible = false;
         });
+
+    gameState.tutorial2 = this.add.image(1300, 376, 'tutorial2')
+      .setOrigin(0, 0)
+      .setDepth(20);
+    gameState.tutorial2.visible = false;
+    gameState.sign2 = this.add.image(1378, 568, 'sign')
+      .setOrigin(0, 0)
+      .setInteractive()
+      .on('pointerover', (pointer) => {
+        gameState.tutorial2.visible = true;
+        })
+      .on('pointerout', (pointer) => {
+        gameState.tutorial2.visible = false;
+        });
+
+    //Adding enemy
+    gameState.enemy = this.physics.add.sprite(1580, 560, 'enemy')
+      .setVelocityX(100);
+    this.physics.add.collider(gameState.enemy, gameState.platforms);
 
     //Adding player sprite
     gameState.player = this.physics.add.sprite(64, 464, 'player');
     this.physics.add.collider(gameState.player, gameState.platforms);
+    this.physics.add.overlap(gameState.player, gameState.enemy, () => {
+      this.death();
+    });
 
     //Adding controls
     gameState.cursors = this.input.keyboard.addKeys({
@@ -104,11 +138,19 @@ class Level1 extends Phaser.Scene {
       repeat: -1
     });
     this.anims.create({
-      key: 'run',
+      key: 'playerrun',
       frames: this.anims.generateFrameNumbers('player', { start: 3, end: 4 }),
       frameRate: 10,
       repeat: -1
     });
+
+    this.anims.create({
+      key: 'enemyrun',
+      frames: this.anims.generateFrameNumbers('enemy'),
+      frameRate: 16,
+      repeat: -1
+    });
+    gameState.enemy.anims.play('enemyrun', true);
 
     //Setting up camera
     this.cameras.main.setBounds(0, 0, gameState.levelWidth, gameState.levelHeight);
@@ -137,12 +179,12 @@ class Level1 extends Phaser.Scene {
       gameState.player.setVelocityX(0);
     } else if (right) {
       gameState.player.flipX = false;
-      gameState.player.anims.play('run', true);
+      gameState.player.anims.play('playerrun', true);
       gameState.player.setVelocityX(500);
     } else if (left) {
       gameState.player.setVelocityX(-500);
       gameState.player.flipX = true;
-      gameState.player.anims.play('run', true);
+      gameState.player.anims.play('playerrun', true);
     } else {
       gameState.player.setVelocityX(0);
       gameState.player.anims.play('idle', true);
@@ -158,12 +200,25 @@ class Level1 extends Phaser.Scene {
 
     //Dying from falling out of world
     if (gameState.player.y > gameState.levelHeight) {
-      this.cameras.main.shake(240, 0.01, false, (camera, progress) => {
-        if (progress > 0.9) {
-          this.scene.restart('Level1');
-        }
-      });
+      this.death();
     }
 
+    //Enemy movement
+    if (gameState.enemy.x > 1980) {
+      gameState.enemy.flipX = true;
+      gameState.enemy.setVelocityX(-100);
+    } else if (gameState.enemy.x < 1580) {
+      gameState.enemy.setVelocityX(100);
+      gameState.enemy.flipX = false;
+    }
+  }
+
+  death() {
+    gameState.player.visible = false;
+    this.cameras.main.shake(240, 0.01, false, (camera, progress) => {
+      if (progress > 0.9) {
+        this.scene.restart('Level1');
+      }
+    });
   }
 }
