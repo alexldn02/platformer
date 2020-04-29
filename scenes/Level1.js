@@ -17,6 +17,8 @@ class Level1 extends Phaser.Scene {
     this.load.image('tutorial1', 'assets/tutorial/1.png');
     this.load.image('tutorial2', 'assets/tutorial/2.png');
     this.load.spritesheet('enemy', 'assets/bug.png', { frameWidth: 64, frameHeight: 48 });
+    this.load.image('cave', 'assets/cave.png');
+    this.load.image('cave-entrance', 'assets/cave-entrance.png');
   }
 
   create() {
@@ -99,17 +101,41 @@ class Level1 extends Phaser.Scene {
         gameState.tutorial2.visible = false;
         });
 
-    //Adding enemy
-    gameState.enemy = this.physics.add.sprite(1580, 560, 'enemy')
-      .setVelocityX(100);
-    this.physics.add.collider(gameState.enemy, gameState.platforms);
+    //Adding level ending
+    gameState.cave = this.add.image(7168, 400, 'cave')
+      .setOrigin(0, 0);
+    gameState.caveEntrance = this.physics.add.staticImage(7440, 488, 'cave-entrance')
+      .setOrigin(0, 0)
+      .refreshBody()
+      .setInteractive();
+
+    //Adding enemies
+    gameState.enemies = this.physics.add.group();
+    gameState.enemies.create(1780, 560, 'enemy')
+      .setVelocityX(100)
+      .originalPos = 1780;
+    gameState.enemies.create(6200, 560, 'enemy')
+      .setVelocityX(100)
+      .originalPos = 6200;
+    gameState.enemies.create(6800, 560, 'enemy')
+      .setVelocityX(100)
+      .originalPos = 6800;
+    this.physics.add.collider(gameState.enemies, gameState.platforms);
 
     //Adding player sprite
     gameState.player = this.physics.add.sprite(64, 464, 'player');
     this.physics.add.collider(gameState.player, gameState.platforms);
-    this.physics.add.overlap(gameState.player, gameState.enemy, () => {
+    this.physics.add.overlap(gameState.player, gameState.enemies, () => {
       this.death();
     });
+    this.physics.add.overlap(gameState.player, gameState.caveEntrance, () => {
+      this.cameras.main.fade(800, 0, 0, 0, false, (camera, progress) => {
+        if (progress > .9) {
+          this.scene.stop('Level1');
+          this.scene.start('TitleScene');
+        }
+      });
+    }, null, this);
 
     //Adding controls
     gameState.cursors = this.input.keyboard.addKeys({
@@ -150,7 +176,9 @@ class Level1 extends Phaser.Scene {
       frameRate: 16,
       repeat: -1
     });
-    gameState.enemy.anims.play('enemyrun', true);
+    gameState.enemies.children.each((enemy) => {
+      enemy.anims.play('enemyrun', true)
+    });
 
     //Setting up camera
     this.cameras.main.setBounds(0, 0, gameState.levelWidth, gameState.levelHeight);
@@ -204,13 +232,15 @@ class Level1 extends Phaser.Scene {
     }
 
     //Enemy movement
-    if (gameState.enemy.x > 1980) {
-      gameState.enemy.flipX = true;
-      gameState.enemy.setVelocityX(-100);
-    } else if (gameState.enemy.x < 1580) {
-      gameState.enemy.setVelocityX(100);
-      gameState.enemy.flipX = false;
-    }
+    gameState.enemies.children.each((enemy) => {
+      if (enemy.x > enemy.originalPos + 200) {
+        enemy.flipX = true;
+        enemy.setVelocityX(-100);
+      } else if (enemy.x < enemy.originalPos - 200) {
+        enemy.setVelocityX(100);
+        enemy.flipX = false;
+      }
+    });
   }
 
   death() {
