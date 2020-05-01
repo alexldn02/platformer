@@ -1,5 +1,3 @@
-const gameState = {};
-
 const config = {
   type: Phaser.Auto,
   width: 1280,
@@ -13,7 +11,7 @@ const config = {
       //debug: true
     }
   },
-  scene: [TitleScene, Level1]
+  scene: [TitleScene, Level1, Level2]
 };
 
 var game = new Phaser.Game(config);
