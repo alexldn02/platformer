@@ -33,23 +33,23 @@ class Level1 extends GameScene {
 
     //Adding platforms
     this.platforms = this.physics.add.staticGroup();
-    this.platforms.create(0, 656, 'grass-platform-left').setOrigin(0, 0).refreshBody();
+    this.addPlat(0, 0, 'grass', 'left');
     for (let i=1;i<9;i++) {
-      this.platforms.create(i*256, 656, 'grass-platform-centre').setOrigin(0, 0).refreshBody();
+      this.addPlat(i, 0, 'grass', 'centre');
     }
-    this.platforms.create(2304, 656, 'grass-platform-right').setOrigin(0, 0).refreshBody();
-    this.platforms.create(512, 464, 'grass-platform-normal').setOrigin(0, 0).refreshBody();
-    this.platforms.create(768, 400, 'grass-platform-normal').setOrigin(0, 0).refreshBody();
+    this.addPlat(9, 0, 'grass', 'right');
+    this.addPlat(2, 3, 'grass', 'normal');
+    this.addPlat(3, 4, 'grass', 'normal');
     for (let i=11;i<16;i+=2) {
-      this.platforms.create(i*256, 656-(i-11)*64, 'grass-platform-normal').setOrigin(0, 0).refreshBody();
+      this.addPlat(i, i-11, 'grass', 'normal');
     }
-    this.platforms.create(4608, 592, 'grass-platform-normal').setOrigin(0, 0).refreshBody();
-    this.platforms.create(5376, 592, 'grass-platform-normal').setOrigin(0, 0).refreshBody();
-    this.platforms.create(5888, 656, 'grass-platform-left').setOrigin(0, 0).refreshBody();
+    this.addPlat(18, 1, 'grass', 'normal');
+    this.addPlat(21, 1, 'grass', 'normal');
+    this.addPlat(23, 0, 'grass', 'left');
     for (let i=24;i<30;i++) {
-      this.platforms.create(i*256, 656, 'grass-platform-centre').setOrigin(0, 0).refreshBody();
+      this.addPlat(i, 0, 'grass', 'centre');
     }
-    this.platforms.create(7680, 656, 'grass-platform-right').setOrigin(0, 0).refreshBody();
+    this.addPlat(30, 0, 'grass', 'right');
 
     //Adding signs
     this.tutorial1 = this.add.image(250, 376, 'tutorial1')
@@ -152,5 +152,10 @@ class Level1 extends GameScene {
         enemy.flipX = false;
       }
     });
+
+    if (Phaser.Input.Keyboard.JustDown(this.cursors.s)) {
+      this.scene.stop('Level1');
+      this.scene.start('Level2');
+    }
   }
 }

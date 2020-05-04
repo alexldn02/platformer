@@ -50,6 +50,24 @@ class GameScene extends Phaser.Scene {
       frameRate: 10,
       repeat: -1
     });
+    this.anims.create({
+      key: 'idle-gun',
+      frames: this.anims.generateFrameNumbers('player', { start: 5, end: 6 }),
+      frameRate: 1,
+      repeat: -1
+    });
+    this.anims.create({
+      key: 'jump-gun',
+      frames: this.anims.generateFrameNumbers('player', { start: 7, end: 7 }),
+      frameRate: 0,
+      repeat: -1
+    });
+    this.anims.create({
+      key: 'playerrun-gun',
+      frames: this.anims.generateFrameNumbers('player', { start: 8, end: 9 }),
+      frameRate: 10,
+      repeat: -1
+    });
   }
 
   death() {
@@ -67,33 +85,46 @@ class GameScene extends Phaser.Scene {
     const right = this.cursors.d.isDown || this.cursors.right.isDown;
     const left = this.cursors.a.isDown || this.cursors.left.isDown;
 
+    let idle = this.player.hasGun ? 'idle-gun' : 'idle';
+    let run = this.player.hasGun ? 'playerrun-gun' : 'playerrun';
+
     if (right && left) {
-      this.player.anims.play('idle', true);
+      this.player.anims.play(idle, true);
       this.player.setVelocityX(0);
     } else if (right) {
       this.player.flipX = false;
-      this.player.anims.play('playerrun', true);
+      this.player.anims.play(run, true);
       this.player.setVelocityX(500);
     } else if (left) {
       this.player.setVelocityX(-500);
       this.player.flipX = true;
-      this.player.anims.play('playerrun', true);
+      this.player.anims.play(run, true);
     } else {
       this.player.setVelocityX(0);
-      this.player.anims.play('idle', true);
+      this.player.anims.play(idle, true);
     }
 
     //Jumping
+    let jump = this.player.hasGun ? 'jump-gun' : 'jump';
+
     if (Phaser.Input.Keyboard.JustDown(this.cursors.space) && this.player.body.touching.down) {
       this.player.setVelocityY(-750);
     }
     if (!this.player.body.touching.down) {
-      this.player.anims.play('jump', true);
+      this.player.anims.play(jump, true);
     }
 
     //Dying from falling out of world
     if (this.player.y > this.levelHeight) {
       this.death();
     }
+
+  }
+
+  addPlat(gridX, gridY, texture, type) {
+    let x = gridX * 256;
+    let y = (config.height - 64) - gridY * 64;
+    let key = texture + '-platform-' + type;
+    this.platforms.create(x, y, key).setOrigin(0, 0).refreshBody();
   }
 }

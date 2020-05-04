@@ -23,6 +23,11 @@ class TitleScene extends GameScene {
     this.load.image('cave-entrance', 'assets/cave-entrance.png');
 
     this.load.image('rock-platform-normal', 'assets/rock-platform/normal.png');
+    this.load.image('rock-platform-right', 'assets/rock-platform/right.png');
+    this.load.image('rock-platform-left', 'assets/rock-platform/left.png');
+    this.load.image('rock-platform-centre', 'assets/rock-platform/centre.png');
+    this.load.image('gun', 'assets/gun.png');
+    this.load.image('bullet', 'assets/bullet.png');
   }
 
   create() {
